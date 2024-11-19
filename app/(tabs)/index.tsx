@@ -1,74 +1,109 @@
-import { Image, StyleSheet, Platform } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
+import React, { useState } from 'react';
+import { View, TextInput, Button, FlatList, Text, StyleSheet, Platform } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
+import { ThemedText } from '@/components/ThemedText';
 
-export default function HomeScreen() {
+export default function InventoryScreen() {
+  const [productName, setProductName] = useState('');
+  const [productQuantity, setProductQuantity] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [inventory, setInventory] = useState([]);
+
+  // Função para adicionar um produto ao estoque
+  const addProduct = () => {
+    if (!productName || !productQuantity || !productPrice) {
+      alert('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    const newProduct = {
+      id: Date.now(), // Usando timestamp como ID único
+      name: productName,
+      quantity: parseInt(productQuantity),
+      price: parseFloat(productPrice),
+    };
+
+    setInventory([...inventory, newProduct]);
+    setProductName('');
+    setProductQuantity('');
+    setProductPrice('');
+  };
+
+  // Função para remover um produto do estoque
+  const removeProduct = (id) => {
+    setInventory(inventory.filter(product => product.id !== id));
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ThemedView style={styles.container}>
+      <ThemedText type="title" style={styles.title}>Gerenciamento de Estoque</ThemedText>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Nome do Produto"
+          value={productName}
+          onChangeText={setProductName}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <TextInput
+          style={styles.input}
+          placeholder="Quantidade"
+          value={productQuantity}
+          onChangeText={setProductQuantity}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Preço"
+          value={productPrice}
+          onChangeText={setProductPrice}
+          keyboardType="numeric"
+        />
+        <Button title="Adicionar Produto" onPress={addProduct} />
+      </View>
+
+      <FlatList
+        data={inventory}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.productItem}>
+            <ThemedText>{item.name} - {item.quantity} em estoque - R${item.price.toFixed(2)}</ThemedText>
+            <Button title="Remover" onPress={() => removeProduct(item.id)} />
+          </View>
+        )}
+        ListEmptyComponent={<ThemedText>Sem produtos no estoque.</ThemedText>}
+      />
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+const styles = StyleSheet.create({ 
+  container: {
+    flex: 1,
+    padding: 16,
+    marginTop: 50
   },
-  stepContainer: {
-    gap: 8,
+  title: {
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
     marginBottom: 8,
+    paddingLeft: 8,
+    borderRadius: 4,
+    color: 'white'
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  productItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
 });
